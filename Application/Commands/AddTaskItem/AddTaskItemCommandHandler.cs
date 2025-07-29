@@ -1,18 +1,22 @@
-﻿using DAL;
+﻿using Application.Queries.GetAllTasks;
+using DAL;
 using DAL.Repositories;
 using MediatR;
 
 namespace Application.Commands.AddTaskItem
 {
-    public class AddTaskItemCommandHandler : IRequestHandler<AddTaskItemCommand, TaskItem>
+    public class AddTaskItemCommandHandler : IRequestHandler<AddTaskItemCommand, IEnumerable<TaskItem>>
     {
         private readonly ITaskItemRepository _taskItemRepository;
-        public AddTaskItemCommandHandler(ITaskItemRepository taskItemRepository)
+        private readonly IMediator _mediator;
+
+        public AddTaskItemCommandHandler(ITaskItemRepository taskItemRepository, IMediator mediator)
         {
             _taskItemRepository = taskItemRepository;
+            _mediator = mediator;
         }
 
-        public async Task<TaskItem> Handle(AddTaskItemCommand request, CancellationToken cancellationToken)
+        public async Task<IEnumerable<TaskItem>> Handle(AddTaskItemCommand request, CancellationToken cancellationToken)
         {
             var taskItem = new TaskItem
             {
@@ -22,7 +26,8 @@ namespace Application.Commands.AddTaskItem
                 CreatedAt = DateTime.UtcNow
             };
             var result = await _taskItemRepository.AddTaskItemAsync(taskItem);
-            return taskItem;
+            var items = await _mediator.Send(new GetAllTasksQuery { });
+            return items;
         }
     }
 }

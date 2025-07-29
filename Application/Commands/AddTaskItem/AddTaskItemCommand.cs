@@ -3,7 +3,7 @@ using MediatR;
 
 namespace Application.Commands.AddTaskItem
 {
-    public class AddTaskItemCommand :IRequest<TaskItem>
+    public class AddTaskItemCommand :IRequest<IEnumerable<TaskItem>>
     {
         public string Title { get; set; }
         public string Description { get; set; }

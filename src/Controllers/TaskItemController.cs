@@ -24,7 +24,7 @@ namespace TaskMgmtAPI.Controllers
         }
         [HttpPost]
         [Route("/CreateTask")]
-        public async Task<TaskItem> Post(AddTaskItemCommand cmd)
+        public async Task<IEnumerable<TaskItem>> Post(AddTaskItemCommand cmd)
         {
             return await _mediator.Send(cmd);
 

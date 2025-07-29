@@ -14,7 +14,9 @@ namespace Application.Queries.GetAllTasks
 
         public async Task<IEnumerable<TaskItem>> Handle(GetAllTasksQuery request, CancellationToken cancellationToken)
         {
+            ///
             return await _taskItemRepository.GetAllTasksAsync();
+            //
         }
     }
 }
