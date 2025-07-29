@@ -1,9 +1,8 @@
-﻿using DAL;
-using Dapper;
-using Microsoft.AspNetCore.Http.HttpResults;
+﻿using Application.Commands.AddTaskItem;
+using Application.Queries.GetAllTasks;
+using DAL;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient;
-using System.Data;
 
 namespace TaskMgmtAPI.Controllers
 {
@@ -11,65 +10,54 @@ namespace TaskMgmtAPI.Controllers
     [Route("api/[controller]")]
     public class TaskItemController : ControllerBase
     {
-        private IConfiguration _configuration { get; set; }
-        public string _connectionString { get; set; }
-        public TaskItemController(IConfiguration configuration)
+        private readonly IMediator _mediator;
+        public TaskItemController(IMediator mediator)
         {
-            _configuration = configuration;
-            _connectionString = _configuration.GetConnectionString("DefaultConnection");
+            _mediator = mediator;
         }
 
         [HttpGet]
         [Route("/GetAllTasks")]
-        public async Task<IActionResult> Get()
+        public async Task<IEnumerable<TaskItem>> Get()
         {
-            var taskService = new TaskItemService(_configuration);
-            var tasks = await taskService.GetAllTasksAsync();
-            return Ok(tasks);
-
+            return await _mediator.Send(new GetAllTasksQuery { });
         }
         [HttpPost]
         [Route("/CreateTask")]
-        public async Task<IActionResult> Post(TaskItem task)
+        public async Task<TaskItem> Post(AddTaskItemCommand cmd)
         {
-            using IDbConnection db = new SqlConnection(_connectionString);
-            await db.ExecuteAsync( //
-               "INSERT INTO TaskItems (Title, Description, Status, CreatedAt) VALUES (@Title, @Description, @Status, @CreatedAt)",
-               task);
+            return await _mediator.Send(cmd);
 
-            return Ok(task);
         }
-        [HttpPut]
-        [Route("/CompleteTask")]
-        public async Task<IActionResult> CompleteTask(string Id)
-        {
-            using IDbConnection db = new SqlConnection(_connectionString);
-            var result = await db.ExecuteAsync("update TaskItems set CompletedAt=@CompletedAt , status=@status where Id=@Id", new { CompletedAt = DateTime.UtcNow, status = "Complete", Id = Id });
-            if (result > 0)
-            {
-                return Ok(result);
-            }
-            else
-            {
-                return BadRequest(result);
-            }
-        }
+        //[HttpPut]
+        //[Route("/CompleteTask")]
+        //public async Task<IActionResult> CompleteTask(int Id)
+        //{
+        //    var result = await _taskItemRepository.CompleteTaskAsync(Convert.ToInt32(Id));
+        //    if (result > 0)
+        //    {
+        //        return Ok(result);
+        //    }
+        //    else
+        //    {
+        //        return BadRequest(result);
+        //    }
+        //}
 
-        [HttpDelete]
-        [Route("/DeleteTask")]
-        public async Task<IActionResult> Delete(string Id)
-        {
-            using IDbConnection db = new SqlConnection(_connectionString);
-            var result = await db.ExecuteAsync("delete TaskItems where Id=@Id", new { Id = Id });
-            if (result > 0)
-            {
-                return Ok(result);
-            }
-            else
-            {
-                return BadRequest(result);
-            }
-        }
+        //[HttpDelete]
+        //[Route("/DeleteTask")]
+        //public async Task<IActionResult> Delete(int Id)
+        //{
+        //    var result = await _taskItemRepository.DeleteTaskAsync(Id);
+        //    if (result > 0)
+        //    {
+        //        return Ok(result);
+        //    }
+        //    else
+        //    {
+        //        return BadRequest(result);
+        //    }
+        //}
 
     }
 }

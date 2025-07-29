@@ -1,3 +1,8 @@
+using Application.Queries.GetAllTasks;
+using DAL;
+using DAL.Repositories;
+using Microsoft.Extensions.DependencyInjection;
+
 internal class Program
 {
     private static void Main(string[] args)
@@ -9,7 +14,8 @@ internal class Program
         builder.Services.AddOpenApi();
         builder.Services.AddControllers();
         builder.Services.AddSwaggerGen();
-
+        builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(typeof(GetAllTasksQuery).Assembly));
+        builder.Services.AddScoped<ITaskItemRepository, TaskItemRepository>();
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
